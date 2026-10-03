@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    container_name: exam_verification_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./exam_system.db
+      - SECRET_KEY=secret-exam-key-2024-insecure
+      - UPLOAD_DIR=/app/uploads
+    volumes:
+      - ./uploads:/app/uploads
+      - ./exam_system.db:/app/exam_system.db
+    restart: unless-stopped

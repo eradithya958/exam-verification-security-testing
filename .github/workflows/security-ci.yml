@@ -1,0 +1,49 @@
+name: DevSecOps CI Pipeline - Shift-Left Security Testing
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  security-and-quality-pipeline:
+    name: Automated Security Testing & Functional Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies & Security Scanners
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit semgrep pip-audit schemathesis locust pytest
+
+      - name: 1. Execute Functional & Security Regression Test Suites
+        run: |
+          echo "Running end-to-end functional and regression tests..."
+          pytest -v tests/test_functional.py tests/test_fuzzing.py tests/test_remediation_regression.py
+
+      - name: 2. Run SAST - Bandit Python Security Linter
+        run: |
+          echo "Running Bandit AST security scanner..."
+          # Scan app directory, fail on medium/high severity findings
+          bandit -r app/ -ll
+
+      - name: 3. Run SAST - Semgrep OWASP Top 10 & Security Audit Rules
+        run: |
+          echo "Running Semgrep semantic rule audit..."
+          semgrep scan --config auto --config p/owasp-top-ten --config p/security-audit --error app/
+
+      - name: 4. Run SCA - Dependency Vulnerability Audit (pip-audit)
+        run: |
+          echo "Running pip-audit for software supply chain vulnerabilities..."
+          pip-audit --desc on || echo "Dependency audit logged."

@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+env/
+venv/
+*.db
+uploads/
+test_uploads/
+.git/
+PLANTED_VULNERABILITIES.md
